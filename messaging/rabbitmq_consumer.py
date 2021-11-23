@@ -7,8 +7,8 @@ import logging
 
 log = logging.getLogger("messaging/gitlab_rabbitmq_consumer.py")
 
-# TODO: edit this to RabbitMQConsumer
-class GitLabConsumer:
+
+class RabbitMQConsumer:
     def __init__(self):
         self.gitlab_service = GitLabService()
 

@@ -3,7 +3,7 @@ import threading
 import pika
 import functools
 
-from messaging.gitlab_rabbitmq_consumer import GitLabConsumer
+from messaging.rabbitmq_consumer import RabbitMQConsumer
 import coloredlogs
 from dotenv import load_dotenv
 import logging
@@ -16,7 +16,7 @@ log = logging.getLogger("main.py")
 log.info(f"Starting GitLab service")
 load_dotenv()
 
-gitlab_consumer = GitLabConsumer()
+gitlab_consumer = RabbitMQConsumer()
 
 
 def on_message(channel, method_frame, header_frame, body, args):
