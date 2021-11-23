@@ -24,6 +24,7 @@ class GitLabService:
         """Handles the requests to GitLab"""
         gitlab_down = True
         response_body = None
+        count = 0
 
         while gitlab_down:
             response = None
@@ -34,14 +35,18 @@ class GitLabService:
                 response = requests.put(url, data=params, headers=header)
             elif request_type == "GET":
                 response = requests.get(url, data=params, headers=header)
-            # response = requests.get("http://httpstat.us/503")
+            elif request_type == "DOWN_SIMULATION":
+                response = requests.get("http://httpstat.us/503") if count < 1 else \
+                    requests.get("http://httpstat.us/200")
+                log.info(f"RESPONSE: {json.loads(response.text)}")
 
             if response.status_code == 500 or response.status_code == 502 or response.status_code == 503:
                 log.error(f"GitLab server is down. I'll try again in ten minutes")
                 self.handle_request_mattermost(f"GitLab server is down. Tried to send the request: `{url}`, "
-                                                 f"but got HTTP response status code {response.status_code}. "
-                                                 "I'll try again in ten minutes")
-                time.sleep(600)
+                                               f"but got HTTP response status code {response.status_code}. "
+                                               "I'll try again in ten minutes")
+                time.sleep(5)  # edit this to your own preferences
+                count += 1  # for the simulation when the API is down
                 continue
             else:
                 gitlab_down = False
@@ -126,24 +131,31 @@ class GitLabService:
 
             if "id" in response_body:
                 self.handle_request_mattermost("The merge request was created successfully. "
-                                                 "Please look in GitLab channel for more details ")
+                                               "Please look in GitLab channel for more details ")
+                return response_body
             else:
                 error = f"{response_body['message']}"[2:-6]
                 log.error(f"Tried to create a merge request, but an error has occurred: {error.lower()}")
                 self.handle_request_mattermost("Tried to create a merge request, but an error has occurred: "
-                                                 f"{error.lower()}")
+                                               f"{error.lower()}")
+
+                return error
         except ProjectNotFound as project_not_found_error:
             log.error("Tried to create a merge request, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to create a merge request, but an error has occurred: "
-                                             f"{str(project_not_found_error).lower()}. "
-                                             "Please specify a correct project name")
+                                           f"{str(project_not_found_error).lower()}. "
+                                           "Please specify a correct project name")
+
+            return project_not_found_error
         except BranchNotFound as branch_not_found_error:
             log.error("Tried to create a merge request, but an error has occurred: "
                       f"{str(branch_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to create a merge request, but an error has occurred: "
-                                             f"{str(branch_not_found_error).lower()}. "
-                                             "Please specify a correct branch name")
+                                           f"{str(branch_not_found_error).lower()}. "
+                                           "Please specify a correct branch name")
+
+            return branch_not_found_error
 
     def create_r(self, body):
         """Rolls out a new release of the project"""
@@ -164,25 +176,33 @@ class GitLabService:
 
             if "name" in response_body:
                 self.handle_request_mattermost("The release rolled out successfully. "
-                                                 "Please look in GitLab channel for more details ")
+                                               "Please look in GitLab channel for more details ")
+
+                return response_body
             elif response_body['message'] == "Ref is not specified":
                 raise TagNotFound(project_id, body['tag_name'])
             else:
                 log.error(f"Tried to roll out a release, but an error has occurred: {response_body['message']}")
                 self.handle_request_mattermost("Tried to roll out a release, but an error has occurred: "
-                                                 f"{response_body['message']}")
+                                               f"{response_body['message']}")
+
+                return response_body['message']
         except ProjectNotFound as project_not_found_error:
             log.error("Tried to roll out a release, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to roll out a release, but an error has occurred: "
-                                             f"{str(project_not_found_error).lower()}. "
-                                             "Please specify a correct project name")
+                                           f"{str(project_not_found_error).lower()}. "
+                                           "Please specify a correct project name")
+
+            return project_not_found_error
         except TagNotFound as tag_not_found_error:
             log.error("Tried to roll out a release, but an error has occurred: "
                       f"{str(tag_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to roll out a release, but an error has occurred: "
-                                             f"{str(tag_not_found_error).lower()}. "
-                                             "Please specify a correct tag name")
+                                           f"{str(tag_not_found_error).lower()}. "
+                                           "Please specify a correct tag name")
+
+            return tag_not_found_error
 
     def create_i(self, body):
         """Opens a new issue in the project"""
@@ -202,13 +222,17 @@ class GitLabService:
 
             if "id" in response_body:
                 self.handle_request_mattermost("The new issue was opened successfully. "
-                                                 "Please look in GitLab channel for more details ")
+                                               "Please look in GitLab channel for more details ")
+
+                return response_body
         except ProjectNotFound as project_not_found_error:
             log.error("Tried to open a new issue, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to open a new issue, but an error has occurred: "
-                                             f"{str(project_not_found_error).lower()}. "
-                                             "Please specify a correct project name")
+                                           f"{str(project_not_found_error).lower()}. "
+                                           "Please specify a correct project name")
+
+            return project_not_found_error
 
     def close_i(self, body):
         """Closes a issue in the project"""
@@ -229,17 +253,22 @@ class GitLabService:
 
             if "id" in response_body:
                 self.handle_request_mattermost("The issue was closed successfully. "
-                                                 "Please look in GitLab channel for more details ")
+                                               "Please look in GitLab channel for more details ")
 
+                return response_body
         except ProjectNotFound as project_not_found_error:
             log.error("Tried to close the issue in a project, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to close the issue in a project, but an error has occurred: "
-                                             f"{str(project_not_found_error).lower()}. "
-                                             "Please specify a correct project name")
+                                           f"{str(project_not_found_error).lower()}. "
+                                           "Please specify a correct project name")
+
+            return project_not_found_error
         except IssueNotFound as issue_not_found_error:
             log.error("Tried to close the issue in a project, but an error has occurred: "
                       f"{str(issue_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to close the issue in a project, but an error has occurred: "
-                                             f"{str(issue_not_found_error).lower()}. "
-                                             "Please specify a correct issue title")
+                                           f"{str(issue_not_found_error).lower()}. "
+                                           "Please specify a correct issue title")
+
+            return issue_not_found_error
