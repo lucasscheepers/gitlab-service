@@ -1,9 +1,9 @@
 import pytest
 
-from exceptions.branch_not_found_exception import BranchNotFound
-from exceptions.issue_not_found_exception import IssueNotFound
-from exceptions.project_not_found_exception import ProjectNotFound
-from exceptions.tag_not_found_exception import TagNotFound
+from exceptions.branch_notfound_exception import BranchNotFoundE
+from exceptions.issue_notfound_exception import IssueNotFoundE
+from exceptions.project_notfound_exception import ProjectNotFoundE
+from exceptions.tag_notfound_exception import TagNotFoundE
 from services.gitlab_service import GitLabService
 from unittest import mock
 from datetime import datetime
@@ -45,7 +45,7 @@ class TestGitlabService:
 
         mock_request_get.return_value = utils.get_response_issue_or_project_id_exception()
 
-        with pytest.raises(ProjectNotFound):
+        with pytest.raises(ProjectNotFoundE):
             self.service.get_project_id("unknown-project")
 
     @mock.patch('services.gitlab_service.requests.get')
@@ -64,7 +64,7 @@ class TestGitlabService:
 
         mock_request_get.return_value = utils.get_response_issue_or_project_id_exception()
 
-        with pytest.raises(IssueNotFound):
+        with pytest.raises(IssueNotFoundE):
             self.service.get_issue_id(31240995, "unkown_issue")
 
     @mock.patch('services.gitlab_service.requests.get')
@@ -83,7 +83,7 @@ class TestGitlabService:
 
         mock_request_get.return_value = utils.get_response_check_branch_exception()
 
-        with pytest.raises(BranchNotFound):
+        with pytest.raises(BranchNotFoundE):
             self.service.check_branch(31240995, "unkown_branch")
 
     @mock.patch('services.gitlab_service.requests.post')
@@ -129,7 +129,7 @@ class TestGitlabService:
 
         actual_result = self.service.create_mr(body)
 
-        assert actual_result.message == ProjectNotFound('unknown-project').message
+        assert actual_result.message == ProjectNotFoundE('unknown-project').message
 
     @mock.patch('services.gitlab_service.requests.post')
     @mock.patch('services.gitlab_service.requests.get')
@@ -150,7 +150,7 @@ class TestGitlabService:
 
         actual_result = self.service.create_mr(body)
 
-        assert actual_result.message == BranchNotFound(31240995, 'unknown-branch').message
+        assert actual_result.message == BranchNotFoundE(31240995, 'unknown-branch').message
 
     @mock.patch('services.gitlab_service.requests.post')
     @mock.patch('services.gitlab_service.requests.get')
@@ -212,7 +212,7 @@ class TestGitlabService:
 
         actual_result = self.service.create_r(body)
 
-        assert actual_result.message == TagNotFound(31240995, 'unknown-tag').message
+        assert actual_result.message == TagNotFoundE(31240995, 'unknown-tag').message
 
     @mock.patch('services.gitlab_service.requests.post')
     @mock.patch('services.gitlab_service.requests.get')
@@ -232,7 +232,7 @@ class TestGitlabService:
 
         actual_result = self.service.create_r(body)
 
-        assert actual_result.message == ProjectNotFound("unknown-project").message
+        assert actual_result.message == ProjectNotFoundE("unknown-project").message
 
     @mock.patch('services.gitlab_service.requests.post')
     @mock.patch('services.gitlab_service.requests.get')
@@ -294,7 +294,7 @@ class TestGitlabService:
 
         actual_result = self.service.create_i(body)
 
-        assert actual_result.message == ProjectNotFound('unknown-project').message
+        assert actual_result.message == ProjectNotFoundE('unknown-project').message
 
     @mock.patch('services.gitlab_service.requests.put')
     @mock.patch('services.gitlab_service.requests.post')
@@ -336,7 +336,7 @@ class TestGitlabService:
 
         actual_result = self.service.close_i(body)
 
-        assert actual_result.message == ProjectNotFound('unknown-project').message
+        assert actual_result.message == ProjectNotFoundE('unknown-project').message
 
     @mock.patch('services.gitlab_service.requests.post')
     @mock.patch('services.gitlab_service.requests.get')
@@ -356,4 +356,4 @@ class TestGitlabService:
 
         actual_result = self.service.close_i(body)
 
-        assert actual_result.message == IssueNotFound(31240995, 'unknown-issue').message
+        assert actual_result.message == IssueNotFoundE(31240995, 'unknown-issue').message

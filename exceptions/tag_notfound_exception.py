@@ -1,4 +1,4 @@
-class TagNotFound(Exception):
+class TagNotFoundE(Exception):
     """Raised when the tag is not found
 
     Attributes:

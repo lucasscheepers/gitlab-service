@@ -1,4 +1,4 @@
-class BranchNotFound(Exception):
+class BranchNotFoundE(Exception):
     """Raised when the branch is not found
 
     Attributes:

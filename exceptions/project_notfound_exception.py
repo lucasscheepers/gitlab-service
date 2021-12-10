@@ -1,4 +1,4 @@
-class ProjectNotFound(Exception):
+class ProjectNotFoundE(Exception):
     """Raised when the project is not found
 
         Attributes:

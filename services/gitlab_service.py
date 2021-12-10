@@ -3,10 +3,10 @@ import json
 import requests
 import logging
 import time
-from exceptions.project_not_found_exception import ProjectNotFound
-from exceptions.issue_not_found_exception import IssueNotFound
-from exceptions.tag_not_found_exception import TagNotFound
-from exceptions.branch_not_found_exception import BranchNotFound
+from exceptions.project_notfound_exception import ProjectNotFoundE
+from exceptions.issue_notfound_exception import IssueNotFoundE
+from exceptions.tag_notfound_exception import TagNotFoundE
+from exceptions.branch_notfound_exception import BranchNotFoundE
 
 log = logging.getLogger("services/gitlab_service.py")
 
@@ -72,7 +72,7 @@ class GitLabService:
             log.info(f"Retrieved the project_id from the project '{project_name}': {project_id}")
             return project_id
         except IndexError:
-            raise ProjectNotFound(project_name)
+            raise ProjectNotFoundE(project_name)
 
     def get_issue_id(self, project_id, title_issue):
         """Retrieves a issue id from a specific issue in a project"""
@@ -93,7 +93,7 @@ class GitLabService:
             log.info(f"Retrieved the issue_id from the issue '{title_issue}': {issue_id}")
             return issue_id
         except IndexError:
-            raise IssueNotFound(project_id, title_issue)
+            raise IssueNotFoundE(project_id, title_issue)
 
     def check_branch(self, project_id, branch):
         """Checks if branch exists"""
@@ -108,7 +108,7 @@ class GitLabService:
             log.info(f"Found the branch: {ans}")
             return ans
         except KeyError:
-            raise BranchNotFound(project_id, branch)
+            raise BranchNotFoundE(project_id, branch)
 
     def create_mr(self, body):
         """Creates merge request in a Git project"""
@@ -140,7 +140,7 @@ class GitLabService:
                                                f"{error.lower()}")
 
                 return error
-        except ProjectNotFound as project_not_found_error:
+        except ProjectNotFoundE as project_not_found_error:
             log.error("Tried to create a merge request, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to create a merge request, but an error has occurred: "
@@ -148,7 +148,7 @@ class GitLabService:
                                            "Please specify a correct project name")
 
             return project_not_found_error
-        except BranchNotFound as branch_not_found_error:
+        except BranchNotFoundE as branch_not_found_error:
             log.error("Tried to create a merge request, but an error has occurred: "
                       f"{str(branch_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to create a merge request, but an error has occurred: "
@@ -180,14 +180,14 @@ class GitLabService:
 
                 return response_body
             elif response_body['message'] == "Ref is not specified":
-                raise TagNotFound(project_id, body['tag_name'])
+                raise TagNotFoundE(project_id, body['tag_name'])
             else:
                 log.error(f"Tried to roll out a release, but an error has occurred: {response_body['message']}")
                 self.handle_request_mattermost("Tried to roll out a release, but an error has occurred: "
                                                f"{response_body['message']}")
 
                 return response_body['message']
-        except ProjectNotFound as project_not_found_error:
+        except ProjectNotFoundE as project_not_found_error:
             log.error("Tried to roll out a release, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to roll out a release, but an error has occurred: "
@@ -195,7 +195,7 @@ class GitLabService:
                                            "Please specify a correct project name")
 
             return project_not_found_error
-        except TagNotFound as tag_not_found_error:
+        except TagNotFoundE as tag_not_found_error:
             log.error("Tried to roll out a release, but an error has occurred: "
                       f"{str(tag_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to roll out a release, but an error has occurred: "
@@ -225,7 +225,7 @@ class GitLabService:
                                                "Please look in GitLab channel for more details ")
 
                 return response_body
-        except ProjectNotFound as project_not_found_error:
+        except ProjectNotFoundE as project_not_found_error:
             log.error("Tried to open a new issue, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to open a new issue, but an error has occurred: "
@@ -256,7 +256,7 @@ class GitLabService:
                                                "Please look in GitLab channel for more details ")
 
                 return response_body
-        except ProjectNotFound as project_not_found_error:
+        except ProjectNotFoundE as project_not_found_error:
             log.error("Tried to close the issue in a project, but an error has occurred: "
                       f"{str(project_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to close the issue in a project, but an error has occurred: "
@@ -264,7 +264,7 @@ class GitLabService:
                                            "Please specify a correct project name")
 
             return project_not_found_error
-        except IssueNotFound as issue_not_found_error:
+        except IssueNotFoundE as issue_not_found_error:
             log.error("Tried to close the issue in a project, but an error has occurred: "
                       f"{str(issue_not_found_error).lower()}")
             self.handle_request_mattermost("Tried to close the issue in a project, but an error has occurred: "

@@ -1,4 +1,4 @@
-class IssueNotFound(Exception):
+class IssueNotFoundE(Exception):
     """Raised when the issue is not found
 
         Attributes:
