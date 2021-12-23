@@ -52,11 +52,11 @@ phases:
       - kubectl get svc
       - echo 'Logging in to Amazon ECR...'
       - $(aws ecr get-login --region eu-west-2 --no-include-email)
-      # - echo Tests started on `date`
-      # - coverage run -m pytest -rap --junitxml coverage.xml
-      # - coverage xml -i
-      # - echo Sonar scanner started on `date`
-      # - sonar-scanner -Dsonar.organization=$SONARORGANIZATION -Dsonar.projectKey=$SONARPROJECTKEY -Dsonar.sources=. -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONARLOGIN
+      - echo Tests started on `date`
+      - coverage run -m pytest -rap --junitxml coverage.xml
+      - coverage xml -i
+      - echo Sonar scanner started on `date`
+      - sonar-scanner -Dsonar.organization=$SONARORGANIZATION -Dsonar.projectKey=$SONARPROJECTKEY -Dsonar.sources=. -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONARLOGIN
 
   build:
     commands:
@@ -72,5 +72,5 @@ phases:
       - docker push $ECRURI:latest
       - docker push $ECRURI:$CODEBUILD_BUILD_NUMBER
       - echo Push the latest image to cluster
-      # - kubectl delete -n ind-iv -f deployment.yml
+      - kubectl delete -n ind-iv -f deployment.yml
       - kubectl apply -n ind-iv -f deployment.yml
